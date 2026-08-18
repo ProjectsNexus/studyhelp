@@ -1,6 +1,6 @@
 {
-  "name": "AI Academic Research Platform",
-  "description": "A mobile-first AI-powered academic research platform with university-grounded context, 4 multimodal input modes (Text, Audio, Video, Live Recording), semester and subject course hierarchy, search grounding, and AI synthesis.",
+  "name": "StudyHelper",
+  "description": "StudyHelper — The premier AI academic study & research assistant featuring multimodal lecture ingestion (Live Audio, Video, Audio files, Text), university course hierarchy, multilingual translation, search grounding, and tailored academic synthesis.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

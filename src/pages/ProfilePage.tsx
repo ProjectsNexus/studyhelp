@@ -239,7 +239,7 @@ export const ProfilePage: React.FC = () => {
                 Mobile & Web App Shortcut (PWA)
               </h3>
               <p className="text-xs text-slate-500">
-                Install Academia AI as a standalone app on your iPhone, Android, or PC/Mac
+                Install StudyHelper as a standalone app on your iPhone, Android, or PC/Mac
               </p>
             </div>
           </div>

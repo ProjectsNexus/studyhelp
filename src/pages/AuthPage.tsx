@@ -63,10 +63,10 @@ export const AuthPage: React.FC = () => {
           <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
             <GraduationCap className="w-5 h-5" />
           </div>
-          <span className="text-xl font-black text-slate-900 tracking-tight">Academia AI</span>
+          <span className="text-xl font-black text-slate-900 tracking-tight">StudyHelper</span>
         </div>
         <p className="text-xs sm:text-sm text-slate-500 max-w-xs mx-auto">
-          AI Academic Research Platform with persistent institutional context
+          Universal Academic Study, Research & Multimodal Learning Platform
         </p>
       </div>
 

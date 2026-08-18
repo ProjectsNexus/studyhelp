@@ -109,7 +109,7 @@ export const AppShortcutModal: React.FC<AppShortcutModalProps> = ({ isOpen, onCl
                 </Badge>
               </div>
               <p className="text-xs text-indigo-200/80">
-                Launch Academia AI directly from your Home Screen or Desktop with 1 tap
+                Launch StudyHelper directly from your Home Screen or Desktop with 1 tap
               </p>
             </div>
           </div>
@@ -182,7 +182,7 @@ export const AppShortcutModal: React.FC<AppShortcutModalProps> = ({ isOpen, onCl
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2.5 text-emerald-900">
               <Check className="w-5 h-5 text-emerald-600 shrink-0" />
               <span className="text-xs font-bold">
-                App shortcut successfully installed! You can now launch Academia AI from your home screen.
+                App shortcut successfully installed! You can now launch StudyHelper from your home screen.
               </span>
             </div>
           )}
@@ -224,7 +224,7 @@ export const AppShortcutModal: React.FC<AppShortcutModalProps> = ({ isOpen, onCl
                       3
                     </div>
                     <p className="pt-0.5 leading-relaxed">
-                      Tap <strong className="text-slate-900">"Add"</strong> in the top right. The Academia AI app icon will now appear on your home screen for full-screen access!
+                      Tap <strong className="text-slate-900">"Add"</strong> in the top right. The StudyHelper app icon will now appear on your home screen for full-screen access!
                     </p>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export const AppShortcutModal: React.FC<AppShortcutModalProps> = ({ isOpen, onCl
                       2
                     </div>
                     <p className="pt-0.5 leading-relaxed">
-                      Click <strong className="text-slate-900">"Install"</strong> to launch Academia AI in its own standalone window without browser tabs.
+                      Click <strong className="text-slate-900">"Install"</strong> to launch StudyHelper in its own standalone window without browser tabs.
                     </p>
                   </div>
                 </div>

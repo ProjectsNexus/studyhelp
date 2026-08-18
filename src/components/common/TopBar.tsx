@@ -38,7 +38,7 @@ export const TopBar: React.FC = () => {
                   Academic Context
                 </p>
                 <p className="text-xs sm:text-sm font-extrabold text-slate-900 truncate max-w-[160px] sm:max-w-[220px]">
-                  {universityProfile ? universityProfile.name : "Academia AI Platform"}
+                  {universityProfile ? universityProfile.name : "StudyHelper Platform"}
                 </p>
               </div>
             </div>
