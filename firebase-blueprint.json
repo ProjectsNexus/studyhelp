@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing basic metadata and settings",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "activeUniversityId": { "type": "string", "maxLength": 128 },
+        "activeSemesterId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email", "displayName"]
+    },
+    "UniversityProfile": {
+      "title": "UniversityProfile",
+      "description": "Permanent university context for academic research",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 200 },
+        "website": { "type": "string", "maxLength": 300 },
+        "country": { "type": "string", "maxLength": 100 },
+        "city": { "type": "string", "maxLength": 100 },
+        "degree": { "type": "string", "maxLength": 150 },
+        "program": { "type": "string", "maxLength": 200 },
+        "department": { "type": "string", "maxLength": 200 },
+        "academicLevel": { "type": "string", "enum": ["undergraduate", "graduate", "postgraduate", "doctorate", "diploma"] },
+        "academicSystem": { "type": "string", "maxLength": 100 },
+        "preferredLanguage": { "type": "string", "maxLength": 50 },
+        "answerStyle": { "type": "string", "enum": ["rigorous", "balanced", "simplified", "exam_oriented"] },
+        "citationPreference": { "type": "string", "enum": ["apa", "ieee", "mla", "chicago", "harvard"] },
+        "researchDepth": { "type": "string", "enum": ["basic", "standard", "deep"] },
+        "officialUrls": { "type": "array" },
+        "departments": { "type": "array" },
+        "academicResources": { "type": "array" },
+        "researchSources": { "type": "array" },
+        "verified": { "type": "boolean" },
+        "verificationNotes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "country", "degree", "program", "department", "academicLevel"]
+    },
+    "SemesterProfile": {
+      "title": "SemesterProfile",
+      "description": "Semester context within the academic program",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "universityId": { "type": "string", "maxLength": 128 },
+        "semesterNumber": { "type": "integer" },
+        "name": { "type": "string", "maxLength": 100 },
+        "academicYear": { "type": "string", "maxLength": 50 },
+        "program": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "semesterNumber"]
+    },
+    "SubjectProfile": {
+      "title": "SubjectProfile",
+      "description": "Subject/course context for targeted research",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "semesterId": { "type": "string", "maxLength": 128 },
+        "universityId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "courseCode": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "learningObjectives": { "type": "array" },
+        "topics": { "type": "array" },
+        "resources": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "semesterId", "name"]
+    },
+    "ResearchRequest": {
+      "title": "ResearchRequest",
+      "description": "Academic research query, configuration, and result payload",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "universityId": { "type": "string", "maxLength": 128 },
+        "semesterId": { "type": "string", "maxLength": 128 },
+        "subjectId": { "type": "string", "maxLength": 128 },
+        "topic": { "type": "string", "maxLength": 300 },
+        "researchType": { "type": "string", "enum": ["quick_explanation", "detailed_research", "study_notes", "exam_preparation", "assignment_research", "topic_summary", "compare_concepts"] },
+        "researchDepth": { "type": "string", "enum": ["basic", "standard", "deep"] },
+        "additionalInstructions": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed", "failed"] },
+        "universityName": { "type": "string", "maxLength": 200 },
+        "semesterName": { "type": "string", "maxLength": 100 },
+        "subjectName": { "type": "string", "maxLength": 150 },
+        "courseCode": { "type": "string", "maxLength": 50 },
+        "searchQueries": { "type": "array" },
+        "filteredSources": { "type": "array" },
+        "answer": { "type": "object" },
+        "promptVersion": { "type": "string", "maxLength": 20 },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "topic", "researchType", "researchDepth", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "/universityProfiles/{profileId}": {
+      "schema": "UniversityProfile",
+      "description": "Permanent university academic contexts"
+    },
+    "/semesterProfiles/{semesterId}": {
+      "schema": "SemesterProfile",
+      "description": "Academic semester records"
+    },
+    "/subjectProfiles/{subjectId}": {
+      "schema": "SubjectProfile",
+      "description": "Course and subject profiles"
+    },
+    "/researchRequests/{requestId}": {
+      "schema": "ResearchRequest",
+      "description": "Academic research requests, history, and generated syntheses"
+    }
+  }
+}
