@@ -19,12 +19,14 @@ import { Button } from "../components/common/Button";
 import { Badge } from "../components/common/Badge";
 import { Select } from "../components/common/Select";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { SemesterSubjectManager } from "../components/academic/SemesterSubjectManager";
 import { UniversityOnboardingModal } from "../components/university/UniversityOnboardingModal";
 import { AppShortcutModal } from "../components/common/AppShortcutModal";
 
 export const ProfilePage: React.FC = () => {
   const { user, universityProfile, saveUniversityProfile, logout } = useAuth();
+  const toast = useToast();
   const [showEditOnboarding, setShowEditOnboarding] = useState(false);
   const [showShortcutModal, setShowShortcutModal] = useState(false);
   const [citationPref, setCitationPref] = useState(universityProfile?.citationPreference || "apa");
@@ -44,11 +46,22 @@ export const ProfilePage: React.FC = () => {
         researchDepth: researchDepth as any,
       });
       setSavedSuccess(true);
+      toast.success("Academic research & citation preferences updated!");
       setTimeout(() => setSavedSuccess(false), 2500);
     } catch (err) {
       console.error("Failed to update preferences:", err);
+      toast.firebaseError(err, "Failed to save preferences to Firestore.");
     } finally {
       setIsSavingPrefs(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.info("You have been signed out.");
+    } catch (err) {
+      toast.firebaseError(err, "Sign out encountered an error.");
     }
   };
 
@@ -67,7 +80,7 @@ export const ProfilePage: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={logout}
+          onClick={handleLogout}
           className="text-rose-600 border-rose-200 hover:bg-rose-50"
           leftIcon={<LogOut className="w-4 h-4" />}
         >

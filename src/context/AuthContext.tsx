@@ -400,44 +400,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Quick Demo Student account login for instant interactive evaluation
   const loginAsDemoStudent = async () => {
     setIsLoading(true);
-    const demoEmail = `student.demo.${Date.now()}@university.edu`;
+    const demoEmail = `scholar.pk.${Date.now()}@nust.edu.pk`;
     const demoPass = "AcademicResearch2026!";
     try {
       const cred = await createUserWithEmailAndPassword(auth, demoEmail, demoPass);
-      await updateProfile(cred.user, { displayName: "Alex Rivera (Scholar)" });
+      await updateProfile(cred.user, { displayName: "Muhammad Hamza (NUST Scholar)" });
 
-      // Create rich university profile
+      // Create rich Pakistani university profile
       const uniProfile: UniversityProfile = {
         id: `uni-${cred.user.uid}`,
         userId: cred.user.uid,
-        name: "Stanford University",
-        website: "https://stanford.edu",
-        country: "United States",
-        city: "Stanford, California",
-        degree: "Bachelor of Science",
+        name: "National University of Sciences and Technology (NUST)",
+        website: "https://nust.edu.pk",
+        country: "Pakistan",
+        city: "Islamabad (Sector H-12)",
+        degree: "BS Computer Science",
         program: "Computer Science",
-        department: "School of Engineering",
+        department: "School of Electrical Engineering and Computer Science (SEECS)",
         academicLevel: "undergraduate",
-        academicSystem: "Quarter System (10-week terms)",
+        academicSystem: "HEC Semester System (16-week terms)",
         preferredLanguage: "English",
         answerStyle: "rigorous",
         citationPreference: "ieee",
         researchDepth: "deep",
         verified: true,
-        verificationNotes: "Official accreditation verified. Department catalog loaded with CS core systems track.",
+        verificationNotes: "HEC accredited premier institution in Islamabad. SEECS curriculum mapped with IEEE and ACM computing standards.",
         officialUrls: [
-          { title: "Stanford CS Course Catalog", url: "https://cs.stanford.edu/academics", type: "portal" },
-          { title: "Stanford Engineering Library", url: "https://library.stanford.edu", type: "library" },
+          { title: "NUST Academics & CMS Portal", url: "https://nust.edu.pk/academics", type: "portal" },
+          { title: "NUST Central Library & IEEE Xplore", url: "https://library.nust.edu.pk", type: "library" },
         ],
         departments: [
-          { name: "Computer Science", description: "Systems, AI, Theory, and Database Specializations" },
-          { name: "Electrical Engineering", description: "Hardware and Network Architectures" },
+          { name: "School of Electrical Engineering and Computer Science (SEECS)", description: "AI, Software Engineering, Networks, and Database Systems" },
+          { name: "School of Mechanical and Manufacturing Engineering (SMME)", description: "Robotics and Advanced Manufacturing" },
         ],
         academicResources: [
-          { title: "Stanford Digital Repository (SDR)", url: "https://sdr.stanford.edu" },
+          { title: "HEC Pakistan National Digital Library", url: "https://digitallibrary.edu.pk" },
         ],
         researchSources: [
-          { title: "Stanford University Official Accreditation", url: "https://stanford.edu/about" },
+          { title: "Higher Education Commission (HEC) Pakistan Recognized", url: "https://hec.gov.pk" },
         ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -454,9 +454,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userId: cred.user.uid,
         universityId: uniProfile.id,
         semesterNumber: 3,
-        name: "Autumn Quarter (Year 2)",
-        program: "Computer Science",
-        description: "Systems programming, algorithms, and core theory",
+        name: "Fall Semester (Semester 3)",
+        program: "BS Computer Science",
+        description: "Data structures, computer architecture, and discrete mathematics",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -466,9 +466,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userId: cred.user.uid,
         universityId: uniProfile.id,
         semesterNumber: 4,
-        name: "Winter Quarter (Year 2)",
-        program: "Computer Science",
-        description: "Databases, distributed systems, and networks",
+        name: "Spring Semester (Semester 4)",
+        program: "BS Computer Science",
+        description: "Database systems, operating systems, and algorithm analysis",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -487,10 +487,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         semesterId: sem2Id,
         universityId: uniProfile.id,
         name: "Database Systems",
-        courseCode: "CS 145",
-        description: "Relational database concepts, normalization, query optimization, ACID transactions, and storage.",
+        courseCode: "CS-214",
+        description: "Relational database concepts, schema design, Boyce-Codd normalization, ACID transactions, and indexing.",
         learningObjectives: [
-          "Master Boyce-Codd (BCNF) and Third Normal Form (3NF) decomposition",
+          "Master Boyce-Codd (BCNF) and Third Normal Form (3NF) decomposition proofs",
           "Analyze query execution plans and B+ Tree indexing performance",
           "Implement concurrency control mechanisms and two-phase locking",
         ],
@@ -505,13 +505,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         semesterId: sem2Id,
         universityId: uniProfile.id,
         name: "Operating Systems Principles",
-        courseCode: "CS 140",
-        description: "Virtual memory, process scheduling, synchronization primitives, file systems.",
+        courseCode: "CS-225",
+        description: "Virtual memory paging, process scheduling, synchronization primitives, deadlock avoidance.",
         learningObjectives: [
-          "Understand virtual memory paging and TLB caching",
-          "Implement lock-free synchronization primitives",
+          "Understand virtual memory paging and TLB caching mechanisms",
+          "Implement Banker's Algorithm and mutex lock synchronization",
         ],
-        topics: ["Virtual Memory", "Deadlock Prevention", "File System Inodes"],
+        topics: ["Virtual Memory", "Deadlock Prevention", "Process Scheduling"],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -522,11 +522,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         semesterId: sem1Id,
         universityId: uniProfile.id,
         name: "Design and Analysis of Algorithms",
-        courseCode: "CS 161",
-        description: "Divide-and-conquer, dynamic programming, graph algorithms, NP-completeness.",
+        courseCode: "CS-211",
+        description: "Divide-and-conquer, dynamic programming, graph algorithms (Dijkstra, A*), NP-completeness.",
         learningObjectives: [
-          "Prove asymptotic complexity bounds using master theorem",
-          "Formulate dynamic programming recurrence relations",
+          "Prove asymptotic complexity bounds using Master Theorem",
+          "Formulate dynamic programming recurrence relations for optimization problems",
         ],
         topics: ["Dynamic Programming", "Dijkstra & A* Search", "Network Flow"],
         createdAt: new Date().toISOString(),

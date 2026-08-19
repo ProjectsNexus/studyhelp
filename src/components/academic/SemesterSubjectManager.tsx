@@ -15,6 +15,7 @@ import { Input } from "../common/Input";
 import { Modal } from "../common/Modal";
 import { Badge } from "../common/Badge";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import { SemesterProfile, SubjectProfile } from "../../types";
 
 export const SemesterSubjectManager: React.FC = () => {
@@ -32,6 +33,7 @@ export const SemesterSubjectManager: React.FC = () => {
     setActiveSemesterId,
     setActiveSubjectId,
   } = useAuth();
+  const toast = useToast();
 
   const [isAddingSemester, setIsAddingSemester] = useState(false);
   const [isAddingSubject, setIsAddingSubject] = useState(false);
@@ -48,14 +50,19 @@ export const SemesterSubjectManager: React.FC = () => {
 
   const handleSaveSemester = async () => {
     if (!semName.trim()) return;
-    await addSemester({
-      semesterNumber: semNum,
-      name: semName.trim(),
-      description: semDesc.trim() || undefined,
-    });
-    setIsAddingSemester(false);
-    setSemName("");
-    setSemDesc("");
+    try {
+      await addSemester({
+        semesterNumber: semNum,
+        name: semName.trim(),
+        description: semDesc.trim() || undefined,
+      });
+      toast.success(`Semester ${semNum} (${semName.trim()}) created successfully!`);
+      setIsAddingSemester(false);
+      setSemName("");
+      setSemDesc("");
+    } catch (err) {
+      toast.firebaseError(err, "Failed to save semester to Firestore.");
+    }
   };
 
   const handleSaveSubject = async () => {
@@ -64,19 +71,41 @@ export const SemesterSubjectManager: React.FC = () => {
       ? subObjectives.split("\n").map((s) => s.trim()).filter(Boolean)
       : undefined;
 
-    await addSubject({
-      semesterId: selectedSemesterForSubject,
-      name: subName.trim(),
-      courseCode: subCode.trim() || undefined,
-      description: subDesc.trim() || undefined,
-      learningObjectives: objectives,
-    });
+    try {
+      await addSubject({
+        semesterId: selectedSemesterForSubject,
+        name: subName.trim(),
+        courseCode: subCode.trim() || undefined,
+        description: subDesc.trim() || undefined,
+        learningObjectives: objectives,
+      });
+      toast.success(`Course '${subName.trim()}' added successfully!`);
+      setIsAddingSubject(false);
+      setSubName("");
+      setSubCode("");
+      setSubDesc("");
+      setSubObjectives("");
+    } catch (err) {
+      toast.firebaseError(err, "Failed to add course to Firestore.");
+    }
+  };
 
-    setIsAddingSubject(false);
-    setSubName("");
-    setSubCode("");
-    setSubDesc("");
-    setSubObjectives("");
+  const handleDeleteSemester = async (id: string, name: string) => {
+    try {
+      await deleteSemester(id);
+      toast.success(`Semester '${name}' deleted.`);
+    } catch (err) {
+      toast.firebaseError(err, "Failed to delete semester.");
+    }
+  };
+
+  const handleDeleteSubject = async (id: string, name: string) => {
+    try {
+      await deleteSubject(id);
+      toast.success(`Course '${name}' deleted.`);
+    } catch (err) {
+      toast.firebaseError(err, "Failed to delete course.");
+    }
   };
 
   return (
@@ -153,7 +182,7 @@ export const SemesterSubjectManager: React.FC = () => {
                   </button>
                   {sem.id && (
                     <button
-                      onClick={() => deleteSemester(sem.id!)}
+                      onClick={() => handleDeleteSemester(sem.id!, sem.name)}
                       className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
                       title="Delete Semester"
                     >
@@ -196,7 +225,7 @@ export const SemesterSubjectManager: React.FC = () => {
 
                         {sub.id && (
                           <button
-                            onClick={() => deleteSubject(sub.id!)}
+                            onClick={() => handleDeleteSubject(sub.id!, sub.name)}
                             className="text-slate-400 hover:text-rose-600 p-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -239,14 +268,14 @@ export const SemesterSubjectManager: React.FC = () => {
           />
           <Input
             label="Semester Title / Academic Term"
-            placeholder="e.g. Spring 2026 or Semester 5"
+            placeholder="e.g. Spring 2026 (Semester 4) or Fall Semester (Semester 3)"
             value={semName}
             onChange={(e) => setSemName(e.target.value)}
             required
           />
           <Input
             label="Description (Optional)"
-            placeholder="e.g. Advanced core systems and elective coursework"
+            placeholder="e.g. Core computing subjects, lab projects, and HEC accredited curriculum"
             value={semDesc}
             onChange={(e) => setSemDesc(e.target.value)}
           />
@@ -270,20 +299,20 @@ export const SemesterSubjectManager: React.FC = () => {
         <div className="space-y-4">
           <Input
             label="Course / Subject Name"
-            placeholder="e.g. Database Systems, Quantum Mechanics, Macroeconomics"
+            placeholder="e.g. Clinical Pharmacology, Pathophysiology, Database Systems, Artificial Intelligence"
             value={subName}
             onChange={(e) => setSubName(e.target.value)}
             required
           />
           <Input
             label="Course Code (Optional)"
-            placeholder="e.g. CS 334, PHYS 201"
+            placeholder="e.g. PHARM-302, MED-401, CS-214, SE-302"
             value={subCode}
             onChange={(e) => setSubCode(e.target.value)}
           />
           <Input
             label="Course Overview (Optional)"
-            placeholder="e.g. Relational database models, normal forms, and query optimization"
+            placeholder="e.g. Pharmacodynamics and mechanism of action of beta-lactam antibiotics, or relational database normal forms"
             value={subDesc}
             onChange={(e) => setSubDesc(e.target.value)}
           />
@@ -293,7 +322,7 @@ export const SemesterSubjectManager: React.FC = () => {
             </label>
             <textarea
               rows={3}
-              placeholder="e.g. Master Boyce-Codd Normal Form&#10;Implement ACID transactions"
+              placeholder="e.g. Master Boyce-Codd Normal Form (BCNF) decompositions&#10;Implement ACID compliant database transactions&#10;Optimize B+ Tree indexing for high-performance queries"
               value={subObjectives}
               onChange={(e) => setSubObjectives(e.target.value)}
               className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"

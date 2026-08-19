@@ -525,7 +525,7 @@ export const ResearchResultView: React.FC<ResearchResultViewProps> = ({ research
                         <p className="text-xs sm:text-sm text-slate-800 font-medium">{item.definition}</p>
                         <p className="text-xs text-slate-600 leading-relaxed">{item.explanation}</p>
                         {item.example && (
-                          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs font-mono text-slate-700">
+                          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs font-mono text-slate-700 break-words break-all">
                             <span className="font-bold text-indigo-700 block mb-0.5">Example:</span>
                             {item.example}
                           </div>
@@ -547,7 +547,7 @@ export const ResearchResultView: React.FC<ResearchResultViewProps> = ({ research
                       Comparative Dimensions & Model Contrast
                     </h3>
                   </div>
-                  <p className="text-xs sm:text-sm text-indigo-900 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-indigo-900 leading-relaxed break-words">
                     {answer.executiveSummary}
                   </p>
                 </div>
@@ -556,12 +556,12 @@ export const ResearchResultView: React.FC<ResearchResultViewProps> = ({ research
                   {answer.keyConcepts.map((item, idx) => (
                     <div key={idx} className="p-4 sm:p-5 bg-white border border-slate-200 rounded-2xl space-y-2 shadow-2xs">
                       <div className="flex items-center justify-between">
-                        <h5 className="text-sm font-bold text-slate-900">{item.concept}</h5>
+                        <h5 className="text-sm font-bold text-slate-900 break-words">{item.concept}</h5>
                         <Badge variant="outline" size="sm">Model {idx + 1}</Badge>
                       </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">{item.explanation}</p>
+                      <p className="text-xs text-slate-700 leading-relaxed break-words">{item.explanation}</p>
                       {item.example && (
-                        <div className="p-2 bg-slate-50 rounded-lg text-xs font-mono text-slate-600">
+                        <div className="p-2 bg-slate-50 rounded-lg text-xs font-mono text-slate-600 break-words break-all">
                           {item.example}
                         </div>
                       )}
@@ -858,7 +858,7 @@ export const ResearchResultView: React.FC<ResearchResultViewProps> = ({ research
                           <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
                             Academic Example / Application
                           </p>
-                          <p className="text-xs text-slate-700 font-mono leading-relaxed">
+                          <p className="text-xs text-slate-700 font-mono leading-relaxed break-words break-all">
                             {item.example}
                           </p>
                         </div>
@@ -976,7 +976,7 @@ export const ResearchResultView: React.FC<ResearchResultViewProps> = ({ research
 
                       <h5 className="text-sm font-bold text-slate-900">{cit.title}</h5>
 
-                      <p className="text-xs font-mono text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 leading-relaxed">
+                      <p className="text-xs font-mono text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 leading-relaxed break-words break-all">
                         {cit.citationText}
                       </p>
 

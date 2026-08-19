@@ -288,19 +288,19 @@ export const LandingPage: React.FC = () => {
               <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 space-y-1">
                 <span className="text-[10px] text-slate-400 font-bold uppercase">1. Raw Input & Capture</span>
                 <p className="text-slate-200 font-medium">
-                  {activeInputDemo === "text" && "Written topic: 'Explain Boyce-Codd Normal Form with decomposition proofs'"}
-                  {activeInputDemo === "live_mic" && "Live Audio: '¿Cómo funciona el algoritmo de Dijkstra en grafos dirigidos?' (Spanish)"}
-                  {activeInputDemo === "audio" && "Lecture File: seminar_quantum_entanglement.mp3 recorded in German"}
-                  {activeInputDemo === "video" && "Video Recording: classroom_macroeconomics_lec4.mp4 with audio extraction"}
+                  {activeInputDemo === "text" && "Written topic: 'Explain Boyce-Codd Normal Form with decomposition proofs for NUST/FAST CS-214'"}
+                  {activeInputDemo === "live_mic" && "Live Audio: 'Dijkstra algorithm aur A* search mein time complexity ka kya farq hai?' (Urdu/English)"}
+                  {activeInputDemo === "audio" && "Lecture File: fast_isb_operating_systems_paging.mp3 recorded in bilingual Urdu/English"}
+                  {activeInputDemo === "video" && "Video Recording: lums_advanced_algorithms_lecture4.mp4 with audio extraction"}
                 </p>
               </div>
 
               <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 space-y-1">
                 <span className="text-[10px] text-indigo-300 font-bold uppercase">2. Native Speech & English Translation</span>
                 <p className="text-slate-200 font-medium">
-                  {activeInputDemo === "text" && "Parsed context & aligned against active course learning objectives."}
-                  {activeInputDemo === "live_mic" && "Transcribed Spanish audio → Auto-translated to English for literature grounding."}
-                  {activeInputDemo === "audio" && "German speech parsed → English academic query formulated with syllabus depth."}
+                  {activeInputDemo === "text" && "Parsed context & aligned against HEC / university course learning objectives."}
+                  {activeInputDemo === "live_mic" && "Transcribed Urdu speech → Auto-translated to English for literature grounding."}
+                  {activeInputDemo === "audio" && "Bilingual lecture speech parsed → English academic query formulated with syllabus depth."}
                   {activeInputDemo === "video" && "Audio stream isolated → Multilingual speech transcribed and translated."}
                 </p>
               </div>

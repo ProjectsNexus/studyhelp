@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ResearchProvider } from "./context/ResearchContext";
+import { ToastProvider } from "./context/ToastContext";
+import { ToastContainer } from "./components/common/ToastContainer";
 import { TopBar } from "./components/common/TopBar";
 import { BottomNavigation } from "./components/common/BottomNavigation";
 import { ResearchProgressModal } from "./components/research/ResearchProgressModal";
@@ -95,54 +97,57 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
 export function App() {
   return (
-    <AuthProvider>
-      <ResearchProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<RootRoute />} />
-            <Route path="/auth" element={<AuthRoute />} />
+    <ToastProvider>
+      <AuthProvider>
+        <ResearchProvider>
+          <ToastContainer />
+          <Router>
+            <Routes>
+              <Route path="/" element={<RootRoute />} />
+              <Route path="/auth" element={<AuthRoute />} />
 
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedLayout>
-                  <DashboardPage />
-                </ProtectedLayout>
-              }
-            />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedLayout>
+                    <DashboardPage />
+                  </ProtectedLayout>
+                }
+              />
 
-            <Route
-              path="/research"
-              element={
-                <ProtectedLayout>
-                  <ResearchPage />
-                </ProtectedLayout>
-              }
-            />
+              <Route
+                path="/research"
+                element={
+                  <ProtectedLayout>
+                    <ResearchPage />
+                  </ProtectedLayout>
+                }
+              />
 
-            <Route
-              path="/history"
-              element={
-                <ProtectedLayout>
-                  <HistoryPage />
-                </ProtectedLayout>
-              }
-            />
+              <Route
+                path="/history"
+                element={
+                  <ProtectedLayout>
+                    <HistoryPage />
+                  </ProtectedLayout>
+                }
+              />
 
-            <Route
-              path="/profile"
-              element={
-                <ProtectedLayout>
-                  <ProfilePage />
-                </ProtectedLayout>
-              }
-            />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedLayout>
+                    <ProfilePage />
+                  </ProtectedLayout>
+                }
+              />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </ResearchProvider>
-    </AuthProvider>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </ResearchProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

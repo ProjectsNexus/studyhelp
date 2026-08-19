@@ -29,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 export const DashboardPage: React.FC = () => {
   const {
     user,
+    userProfile,
     universityProfile,
     semesters,
     subjects,
@@ -55,82 +56,138 @@ export const DashboardPage: React.FC = () => {
 
   const recentResearches = researchHistory.slice(0, 4);
 
+  // Compute live academic statistics from real user data
+  const totalCitations = researchHistory.reduce((acc, curr) => {
+    return acc + (curr.answer?.citationsList?.length || curr.filteredSources?.length || 0);
+  }, 0);
+
+  const studentName = userProfile?.displayName || user?.displayName || user?.email?.split("@")[0] || "Scholar";
+  const studentEmail = user?.email || "";
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20">
       {/* Header Context Banner */}
       <section className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm space-y-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-indigo-600 rounded-full"></span>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-2.5 h-2.5 bg-indigo-600 rounded-full shrink-0"></span>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Academic Context Engine
+                {studentName}
               </h1>
+              {universityProfile?.verified && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+                  <Check className="w-3 h-3" />
+                  <span>Verified Scholar</span>
+                </span>
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Curriculum-aligned research where your University, Semester, and Course profiles drive every AI insight.
+
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              {universityProfile ? (
+                <>
+                  <span className="text-slate-900 font-bold">{universityProfile.name}</span>
+                  {universityProfile.city && (
+                    <span className="text-slate-500"> • {universityProfile.city}</span>
+                  )}
+                  {universityProfile.program && (
+                    <span className="text-slate-500"> • {universityProfile.degree} ({universityProfile.program})</span>
+                  )}
+                </>
+              ) : (
+                "University context not yet calibrated. Set up your institution to customize syllabus rigor and research standards."
+              )}
             </p>
+
+            {studentEmail && (
+              <p className="text-[11px] text-slate-400 font-mono">
+                {studentEmail}
+              </p>
+            )}
           </div>
 
-          {universityProfile ? (
-            <button
-              onClick={() => setShowOnboarding(true)}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider transition-colors shrink-0"
-            >
-              Edit Context
-            </button>
-          ) : (
-            <Button
-              size="sm"
-              onClick={() => setShowOnboarding(true)}
-              className="font-bold text-xs uppercase tracking-wider"
-            >
-              Configure Context
-            </Button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {universityProfile ? (
+              <button
+                type="button"
+                onClick={() => setShowOnboarding(true)}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 tracking-wide transition-colors cursor-pointer"
+              >
+                Edit Context
+              </button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => setShowOnboarding(true)}
+                className="font-bold text-xs"
+              >
+                Configure University
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Academic Context Tags & Metrics */}
+        {/* Real Context Hierarchy & Badges */}
         {universityProfile ? (
-          <div className="space-y-4 pt-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg uppercase tracking-wider border border-indigo-100">
-                {universityProfile.name}
+          <div className="space-y-4 pt-1 border-t border-slate-100">
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-100">
+                {universityProfile.department || universityProfile.program}
               </span>
               {activeSemester && (
-                <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg uppercase tracking-wider border border-slate-200">
-                  Semester {activeSemester.semesterNumber}
+                <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200">
+                  Semester {activeSemester.semesterNumber}: {activeSemester.name}
                 </span>
               )}
               {activeSubject && (
-                <span className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs font-bold rounded-lg uppercase tracking-wider border border-slate-200 truncate max-w-[220px]">
+                <span className="px-2.5 py-1 bg-slate-50 text-slate-700 text-xs font-bold rounded-lg border border-slate-200">
                   {activeSubject.courseCode ? `${activeSubject.courseCode}: ` : ""}
                   {activeSubject.name}
                 </span>
               )}
-              <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg uppercase tracking-wider border border-emerald-200 flex items-center gap-1">
-                <Check className="w-3 h-3" />
-                <span>Verified</span>
-              </span>
+              {universityProfile.academicSystem && (
+                <span className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg border border-slate-200">
+                  {universityProfile.academicSystem}
+                </span>
+              )}
             </div>
 
-            {/* Geometric Stat blocks */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <p className="text-xl font-black text-indigo-600 mb-0.5">99.4%</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Source Accuracy</p>
+            {/* Real Statistics Metric Blocks */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90">
+                <p className="text-xl sm:text-2xl font-black text-indigo-600 mb-0.5">
+                  {researchHistory.length}
+                </p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Reports Generated
+                </p>
               </div>
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <p className="text-xl font-black text-slate-900 mb-0.5">8 Tiers</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Peer Filtering</p>
+
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90">
+                <p className="text-xl sm:text-2xl font-black text-slate-900 mb-0.5">
+                  {totalCitations}
+                </p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Indexed Citations
+                </p>
               </div>
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <p className="text-xl font-black text-slate-900 mb-0.5">{universityProfile.citationPreference.toUpperCase()}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Citation Style</p>
+
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90">
+                <p className="text-xl sm:text-2xl font-black text-slate-900 mb-0.5">
+                  {subjects.length}
+                </p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Enrolled Courses
+                </p>
               </div>
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <p className="text-xl font-black text-slate-900 mb-0.5">{subjects.length}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Courses</p>
+
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90">
+                <p className="text-xl sm:text-2xl font-black text-slate-900 mb-0.5">
+                  {universityProfile.citationPreference ? universityProfile.citationPreference.toUpperCase() : "IEEE"}
+                </p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Citation Standard
+                </p>
               </div>
             </div>
           </div>
@@ -141,18 +198,18 @@ export const DashboardPage: React.FC = () => {
                 <GraduationCap className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-bold text-slate-900">Standard Academic Defaults Active</p>
+                <p className="font-bold text-slate-900">Academic Context Pending</p>
                 <p className="text-slate-500">
-                  You can set up your university profile anytime to calibrate syllabus rigor, course-specific benchmarks, and citation preferences.
+                  Configure your university profile to align research queries with your official syllabus, degree requirements, and citation format.
                 </p>
               </div>
             </div>
             <Button
               size="sm"
               onClick={() => setShowOnboarding(true)}
-              className="shrink-0 font-bold"
+              className="shrink-0 font-bold text-xs"
             >
-              Configure Setup
+              Set Up Now
             </Button>
           </div>
         )}

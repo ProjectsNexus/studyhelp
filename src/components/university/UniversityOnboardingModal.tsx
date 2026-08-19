@@ -21,6 +21,8 @@ import { Select } from "../common/Select";
 import { Card } from "../common/Card";
 import { Badge } from "../common/Badge";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { parseFirebaseError } from "../../utils/firebaseErrors";
 import { UniversityProfile } from "../../types";
 
 interface OnboardingModalProps {
@@ -35,6 +37,7 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
   initialProfile,
 }) => {
   const { saveUniversityProfile, setNeedsOnboarding } = useAuth();
+  const toast = useToast();
   const [step, setStep] = useState<number>(1);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -44,16 +47,16 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
   const [formData, setFormData] = useState({
     name: initialProfile?.name || "",
     website: initialProfile?.website || "",
-    country: initialProfile?.country || "United States",
-    city: initialProfile?.city || "",
-    degree: initialProfile?.degree || "Bachelor of Science",
+    country: initialProfile?.country || "Pakistan",
+    city: initialProfile?.city || "Islamabad",
+    degree: initialProfile?.degree || "BS Computer Science",
     program: initialProfile?.program || "Computer Science",
-    department: initialProfile?.department || "Computer Science & Engineering",
+    department: initialProfile?.department || "School of Electrical Engineering & Computer Science (SEECS)",
     academicLevel: initialProfile?.academicLevel || "undergraduate",
     currentSemester: 4,
     preferredLanguage: initialProfile?.preferredLanguage || "English",
     answerStyle: initialProfile?.answerStyle || "balanced",
-    citationPreference: initialProfile?.citationPreference || "apa",
+    citationPreference: initialProfile?.citationPreference || "ieee",
     researchDepth: initialProfile?.researchDepth || "standard",
   });
 
@@ -114,9 +117,12 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
       if (res.data.officialWebsite && !formData.website) {
         setFormData((prev) => ({ ...prev, website: res.data.officialWebsite }));
       }
+      toast.success(`${formData.name} verified successfully!`);
     } catch (err: any) {
       console.error("Verification error:", err);
-      setError(err instanceof Error ? err.message : "Verification encountered a problem");
+      const parsed = parseFirebaseError(err, "Verification encountered a problem.");
+      toast.firebaseError(err, "Verification encountered a problem");
+      setError(parsed.message);
     } finally {
       setIsVerifying(false);
     }
@@ -148,20 +154,28 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
         verificationNotes: verifiedData?.verificationNotes || "Self-configured university profile.",
       });
 
+      toast.success("University profile configured & saved successfully!");
       if (onClose) onClose();
     } catch (err: any) {
-      setError(err instanceof Error ? err.message : "Failed to save profile to Firestore.");
+      const parsed = parseFirebaseError(err, "Failed to save profile.");
+      toast.firebaseError(err, "Failed to save profile to Firestore.");
+      setError(parsed.message);
     } finally {
       setIsSaving(false);
     }
   };
 
   const universityPresets = [
-    { name: "Stanford University", country: "United States", city: "Stanford, CA", site: "https://stanford.edu" },
-    { name: "Massachusetts Institute of Technology (MIT)", country: "United States", city: "Cambridge, MA", site: "https://mit.edu" },
-    { name: "University of Oxford", country: "United Kingdom", city: "Oxford", site: "https://ox.ac.uk" },
-    { name: "National University of Singapore (NUS)", country: "Singapore", city: "Singapore", site: "https://nus.edu.sg" },
-    { name: "University of Toronto", country: "Canada", city: "Toronto, ON", site: "https://utoronto.ca" },
+    { name: "NUST (National University of Sciences & Technology)", country: "Pakistan", city: "Islamabad (H-12)", site: "https://nust.edu.pk" },
+    { name: "King Edward Medical University (KEMU)", country: "Pakistan", city: "Lahore (Nila Gumbad)", site: "https://kemu.edu.pk" },
+    { name: "Aga Khan University (AKU)", country: "Pakistan", city: "Karachi", site: "https://aku.edu" },
+    { name: "Army Medical College (NUMS / AMC)", country: "Pakistan", city: "Rawalpindi", site: "https://nums.edu.pk" },
+    { name: "FAST-NUCES Islamabad", country: "Pakistan", city: "Islamabad (H-11)", site: "https://nu.edu.pk" },
+    { name: "LUMS (Lahore University of Management Sciences)", country: "Pakistan", city: "Lahore (DHA)", site: "https://lums.edu.pk" },
+    { name: "FAST-NUCES Lahore", country: "Pakistan", city: "Lahore (Faisal Town)", site: "https://lhr.nu.edu.pk" },
+    { name: "Quaid-i-Azam University (QAU)", country: "Pakistan", city: "Islamabad", site: "https://qau.edu.pk" },
+    { name: "UET Lahore", country: "Pakistan", city: "Lahore (GT Road)", site: "https://uet.edu.pk" },
+    { name: "COMSATS University Islamabad", country: "Pakistan", city: "Islamabad (Park Road)", site: "https://comsats.edu.pk" },
   ];
 
   return (
@@ -244,7 +258,7 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="space-y-4">
               <Input
                 label="University Name"
-                placeholder="e.g. Stanford University, MIT, University of Oxford"
+                placeholder="e.g. NUST Islamabad, FAST-NUCES Lahore, LUMS, Quaid-i-Azam University, UET Lahore"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 leftIcon={<Building2 className="w-4 h-4" />}
@@ -254,14 +268,14 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input
                   label="Country"
-                  placeholder="e.g. United States, United Kingdom, Canada"
+                  placeholder="e.g. Pakistan"
                   value={formData.country}
                   onChange={(e) => handleInputChange("country", e.target.value)}
                   required
                 />
                 <Input
                   label="City / Campus (Optional)"
-                  placeholder="e.g. Stanford, Cambridge"
+                  placeholder="e.g. Islamabad (H-12), Lahore (DHA / Faisal Town)"
                   value={formData.city}
                   onChange={(e) => handleInputChange("city", e.target.value)}
                 />
@@ -269,7 +283,7 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
 
               <Input
                 label="University Website (Optional)"
-                placeholder="e.g. https://stanford.edu"
+                placeholder="e.g. https://nust.edu.pk, https://lums.edu.pk, https://nu.edu.pk"
                 value={formData.website}
                 onChange={(e) => handleInputChange("website", e.target.value)}
                 helperText="If omitted, AI will discover official institutional domains during verification."
@@ -295,7 +309,7 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
                       }}
                       className="px-2.5 py-1 text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 rounded-lg border border-slate-200 transition-colors"
                     >
-                      {u.name.split(" ")[0]} ({u.country})
+                      {u.name.split(" ")[0]} ({u.city.split(" ")[0]})
                     </button>
                   ))}
                 </div>
@@ -312,8 +326,8 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
                   value={formData.academicLevel}
                   onChange={(e) => handleInputChange("academicLevel", e.target.value)}
                   options={[
-                    { value: "undergraduate", label: "Undergraduate (Bachelor's)" },
-                    { value: "graduate", label: "Graduate (Master's)" },
+                    { value: "undergraduate", label: "Undergraduate (Bachelor's - BS / BE / BBA)" },
+                    { value: "graduate", label: "Graduate (Master's - MS / MPhil / MBA)" },
                     { value: "doctorate", label: "Doctorate (Ph.D.)" },
                     { value: "postgraduate", label: "Postgraduate Diploma" },
                     { value: "diploma", label: "Associate / Diploma" },
@@ -321,7 +335,7 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
                 />
                 <Input
                   label="Degree Type"
-                  placeholder="e.g. Bachelor of Science, B.Tech, Master of Arts"
+                  placeholder="e.g. MBBS, BDS, PharmD, BS Computer Science, MS Software Engineering, BBA"
                   value={formData.degree}
                   onChange={(e) => handleInputChange("degree", e.target.value)}
                   required
@@ -330,7 +344,7 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
 
               <Input
                 label="Major / Academic Program"
-                placeholder="e.g. Computer Science, Mechanical Engineering, Economics"
+                placeholder="e.g. Medicine & Surgery (MBBS), Pharmacology, Computer Science, Artificial Intelligence"
                 value={formData.program}
                 onChange={(e) => handleInputChange("program", e.target.value)}
                 leftIcon={<BookOpen className="w-4 h-4" />}
@@ -339,7 +353,7 @@ export const UniversityOnboardingModal: React.FC<OnboardingModalProps> = ({
 
               <Input
                 label="Faculty / Academic Department"
-                placeholder="e.g. School of Engineering, Department of Computer Science"
+                placeholder="e.g. Department of Clinical Medicine, SEECS (NUST), Department of Physiology, FAST Lahore"
                 value={formData.department}
                 onChange={(e) => handleInputChange("department", e.target.value)}
               />

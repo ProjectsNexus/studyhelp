@@ -17,15 +17,36 @@ import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
 import { useResearch } from "../context/ResearchContext";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { useNavigate } from "react-router-dom";
 
 export const HistoryPage: React.FC = () => {
   const { researchHistory, setCurrentResearch, reRunResearch, deleteResearch, isResearching } =
     useResearch();
   const { semesters, subjects } = useAuth();
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filterSubject, setFilterSubject] = useState<string>("all");
   const navigate = useNavigate();
+
+  const handleDelete = async (id: string, topic: string) => {
+    try {
+      await deleteResearch(id);
+      toast.success(`Removed "${topic.slice(0, 30)}..." from research history.`);
+    } catch (err) {
+      toast.firebaseError(err, "Failed to delete research item.");
+    }
+  };
+
+  const handleReRun = async (id: string) => {
+    try {
+      toast.info("Re-running academic synthesis with fresh peer sources...");
+      await reRunResearch(id);
+      navigate("/research");
+    } catch (err) {
+      toast.firebaseError(err, "Failed to re-run research.");
+    }
+  };
 
   const filteredHistory = researchHistory.filter((item) => {
     const matchesSearch =
@@ -114,7 +135,7 @@ export const HistoryPage: React.FC = () => {
 
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => reRunResearch(item.id)}
+                    onClick={() => handleReRun(item.id)}
                     disabled={isResearching}
                     className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
                     title="Refresh research with fresh literature"
@@ -122,7 +143,7 @@ export const HistoryPage: React.FC = () => {
                     <RotateCw className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => deleteResearch(item.id)}
+                    onClick={() => handleDelete(item.id, item.topic)}
                     className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
                     title="Delete research entry"
                   >

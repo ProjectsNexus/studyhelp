@@ -4,6 +4,8 @@ import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
 import { Card } from "../components/common/Card";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import { parseFirebaseError } from "../utils/firebaseErrors";
 import { useNavigate } from "react-router-dom";
 
 export const AuthPage: React.FC = () => {
@@ -15,6 +17,7 @@ export const AuthPage: React.FC = () => {
   const [isLoadingLocal, setIsLoadingLocal] = useState(false);
 
   const { login, register, loginAsDemoStudent } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,13 +29,17 @@ export const AuthPage: React.FC = () => {
       if (mode === "register") {
         if (!name.trim()) throw new Error("Please enter your name.");
         await register(name.trim(), email.trim(), password);
+        toast.success("Account created! Let's set up your university profile.");
       } else {
         await login(email.trim(), password);
+        toast.success("Welcome back to StudyHelper!");
       }
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Auth error:", err);
-      setError(err instanceof Error ? err.message : "Authentication failed.");
+      const parsed = parseFirebaseError(err, "Authentication failed. Please verify your credentials.");
+      toast.firebaseError(err, "Authentication failed. Please verify your credentials.");
+      setError(parsed.message);
     } finally {
       setIsLoadingLocal(false);
     }
@@ -43,10 +50,13 @@ export const AuthPage: React.FC = () => {
     setIsLoadingLocal(true);
     try {
       await loginAsDemoStudent();
+      toast.success("Signed in as Muhammad Hamza (NUST Scholar)");
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Demo login error:", err);
-      setError(err instanceof Error ? err.message : "Failed to launch demo.");
+      const parsed = parseFirebaseError(err, "Failed to launch student demo session.");
+      toast.firebaseError(err, "Failed to launch student demo session.");
+      setError(parsed.message);
     } finally {
       setIsLoadingLocal(false);
     }
@@ -114,7 +124,7 @@ export const AuthPage: React.FC = () => {
           {mode === "register" && (
             <Input
               label="Full Name"
-              placeholder="e.g. Alex Rivera"
+              placeholder="e.g. Muhammad Hamza"
               value={name}
               onChange={(e) => setName(e.target.value)}
               leftIcon={<User className="w-4 h-4" />}
@@ -125,7 +135,7 @@ export const AuthPage: React.FC = () => {
           <Input
             label="Academic / University Email"
             type="email"
-            placeholder="student@university.edu"
+            placeholder="student@nust.edu.pk or student@lums.edu.pk"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             leftIcon={<Mail className="w-4 h-4" />}

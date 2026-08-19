@@ -28,6 +28,7 @@ import { Badge } from "../common/Badge";
 import { Modal } from "../common/Modal";
 import { useAuth } from "../../context/AuthContext";
 import { useResearch } from "../../context/ResearchContext";
+import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router-dom";
 import { LiveAudioRecorder, TranscribedMediaData } from "./inputs/LiveAudioRecorder";
 import { AudioUploader } from "./inputs/AudioUploader";
@@ -47,6 +48,7 @@ export const ResearchForm: React.FC = () => {
   } = useAuth();
 
   const { executeResearch, isResearching } = useResearch();
+  const toast = useToast();
   const navigate = useNavigate();
 
   // Input Mode: 'text' | 'audio_file' | 'video_file' | 'live_record'
@@ -136,63 +138,97 @@ export const ResearchForm: React.FC = () => {
       navigate("/research");
     } catch (err) {
       console.error("Research trigger error:", err);
+      toast.firebaseError(err, "Academic research pipeline encountered an error.");
     }
   };
 
   const handleCreateSemester = async () => {
     if (!newSemName.trim()) return;
-    const created = await addSemester({
-      semesterNumber: newSemNum,
-      name: newSemName.trim(),
-      program: universityProfile?.program,
-    });
-    setSelectedSemesterId(created.id!);
-    setActiveSemesterId(created.id!);
-    setIsAddingSemester(false);
-    setNewSemName("");
+    try {
+      const created = await addSemester({
+        semesterNumber: newSemNum,
+        name: newSemName.trim(),
+        program: universityProfile?.program,
+      });
+      toast.success(`Semester ${newSemNum} (${newSemName.trim()}) created!`);
+      setSelectedSemesterId(created.id!);
+      setActiveSemesterId(created.id!);
+      setIsAddingSemester(false);
+      setNewSemName("");
+    } catch (err) {
+      toast.firebaseError(err, "Failed to create semester.");
+    }
   };
 
   const handleCreateSubject = async () => {
     if (!newSubName.trim()) return;
-    const created = await addSubject({
-      semesterId: selectedSemesterId || semesters[0]?.id || "default",
-      name: newSubName.trim(),
-      courseCode: newSubCode.trim() || undefined,
-      description: newSubDesc.trim() || undefined,
-    });
-    setSelectedSubjectId(created.id!);
-    setActiveSubjectId(created.id!);
-    setIsAddingSubject(false);
-    setNewSubName("");
-    setNewSubCode("");
-    setNewSubDesc("");
+    try {
+      const created = await addSubject({
+        semesterId: selectedSemesterId || semesters[0]?.id || "default",
+        name: newSubName.trim(),
+        courseCode: newSubCode.trim() || undefined,
+        description: newSubDesc.trim() || undefined,
+      });
+      toast.success(`Subject '${newSubName.trim()}' added!`);
+      setSelectedSubjectId(created.id!);
+      setActiveSubjectId(created.id!);
+      setIsAddingSubject(false);
+      setNewSubName("");
+      setNewSubCode("");
+      setNewSubDesc("");
+    } catch (err) {
+      toast.firebaseError(err, "Failed to create subject.");
+    }
   };
 
   const academicTopicsSuggestions = [
     {
-      topic: "Database Normalization (3NF vs BCNF)",
-      subject: "Database Systems",
-      type: "compare_concepts" as const,
-    },
-    {
-      topic: "CAP Theorem & Distributed Consensus",
-      subject: "Distributed Systems",
-      type: "detailed_research" as const,
-    },
-    {
-      topic: "Dijkstra vs A* Algorithm Time Complexity",
-      subject: "Design and Analysis of Algorithms",
+      topic: "Pathophysiology of Diabetic Ketoacidosis (DKA) & Fluid Resuscitation Protocols",
+      subject: "MED-401: Clinical Medicine & Pharmacology (KEMU / AKU / AMC)",
       type: "exam_preparation" as const,
+      category: "Medical",
     },
     {
-      topic: "CRISPR-Cas9 Mechanism & Ethics",
-      subject: "Molecular Biology",
-      type: "detailed_research" as const,
-    },
-    {
-      topic: "Keynesian vs Classical Macroeconomic Models",
-      subject: "Macroeconomics",
+      topic: "Beta-Lactam Antibiotics Mechanism & Bacterial Resistance Pathways",
+      subject: "PHARM-302: Medical Pharmacology (UHS / King Edward / FJMU)",
       type: "study_notes" as const,
+      category: "Medical",
+    },
+    {
+      topic: "First-Line Management of Acute Coronary Syndrome (STEMI vs NSTEMI)",
+      subject: "CARD-501: Clinical Cardiology & Emergency Medicine (AKU / PIMS)",
+      type: "detailed_research" as const,
+      category: "Medical",
+    },
+    {
+      topic: "Cardiac Action Potential Phases in Myocytes vs Pacemaker Cells",
+      subject: "PHYS-101: Medical Physiology (Dow / Army Medical College)",
+      type: "compare_concepts" as const,
+      category: "Medical",
+    },
+    {
+      topic: "Database Normalization (3NF vs BCNF proofs)",
+      subject: "CS-214: Database Systems (NUST / FAST)",
+      type: "compare_concepts" as const,
+      category: "Engineering",
+    },
+    {
+      topic: "Dijkstra vs A* Shortest Path Complexity",
+      subject: "CS-211: Design & Analysis of Algorithms (LUMS / UET)",
+      type: "exam_preparation" as const,
+      category: "Engineering",
+    },
+    {
+      topic: "Deadlock Prevention & Banker's Algorithm",
+      subject: "CS-225: Operating Systems (FAST Islamabad / COMSATS)",
+      type: "detailed_research" as const,
+      category: "Engineering",
+    },
+    {
+      topic: "Pakistan's Monetary Policy Transmission & Inflation",
+      subject: "ECON-301: Macroeconomics (QAU / LSE)",
+      type: "study_notes" as const,
+      category: "Business",
     },
   ];
 
@@ -477,20 +513,22 @@ export const ResearchForm: React.FC = () => {
               }}
               placeholder={
                 inputMode === "text"
-                  ? "e.g. Compare Boyce-Codd Normal Form (BCNF) with 3NF with real-world database anomaly proofs..."
-                  : "Transcribed research query will appear here automatically. You can also edit or refine it before executing..."
+                  ? "e.g. Medical: Pathophysiology of DKA & fluid resuscitation protocols | CS: Compare 3NF vs BCNF decomposition proofs | Bio: Mechanism of Action of Beta-Lactam antibiotics..."
+                  : "Transcribed research query will appear here automatically in English. You can also refine or edit it before executing..."
               }
-              className="w-full rounded-2xl border border-slate-200 p-3.5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 resize-none transition-colors"
+              className="w-full rounded-2xl border border-slate-200 p-3.5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 resize-none transition-colors break-words"
             />
           </div>
         </div>
 
         {/* Suggested Prompts Chips (Visible in Text Mode or as inspiration) */}
         {inputMode === "text" && (
-          <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">
-              Suggested Academic Prompts
-            </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                Suggested Academic Prompts (Medical, Engineering & Business)
+              </span>
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {academicTopicsSuggestions.map((item, idx) => (
                 <button
@@ -500,9 +538,18 @@ export const ResearchForm: React.FC = () => {
                     setTopic(item.topic);
                     setResearchType(item.type);
                   }}
-                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200/90 transition-colors text-left cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200 transition-all text-left cursor-pointer flex items-center gap-1.5 max-w-full break-words"
                 >
-                  <span>{item.topic}</span>
+                  <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0 ${
+                    item.category === "Medical"
+                      ? "bg-rose-50 text-rose-700 border border-rose-200"
+                      : item.category === "Engineering"
+                      ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                      : "bg-amber-50 text-amber-700 border border-amber-200"
+                  }`}>
+                    {item.category}
+                  </span>
+                  <span className="truncate max-w-[280px] sm:max-w-xs">{item.topic}</span>
                 </button>
               ))}
             </div>
@@ -571,7 +618,7 @@ export const ResearchForm: React.FC = () => {
 
                 <Input
                   label="Additional Custom Instructions"
-                  placeholder="e.g. Emphasize SQL code examples, include proofs, focus on IEEE format"
+                  placeholder="e.g. Emphasize HEC curriculum guidelines, include C++/Python code snippets, solve past exam problems"
                   value={additionalInstructions}
                   onChange={(e) => setAdditionalInstructions(e.target.value)}
                 />
@@ -620,7 +667,7 @@ export const ResearchForm: React.FC = () => {
           />
           <Input
             label="Semester Name / Title"
-            placeholder="e.g. Fall Semester (Year 2) or Spring 2026"
+            placeholder="e.g. Spring 2026 (Semester 4) or Fall Semester (Semester 3)"
             value={newSemName}
             onChange={(e) => setNewSemName(e.target.value)}
             required
@@ -646,20 +693,20 @@ export const ResearchForm: React.FC = () => {
         <div className="space-y-4">
           <Input
             label="Subject Name"
-            placeholder="e.g. Database Systems, Linear Algebra, Macroeconomics"
+            placeholder="e.g. Database Systems, Data Structures & Algorithms, Digital Logic Design"
             value={newSubName}
             onChange={(e) => setNewSubName(e.target.value)}
             required
           />
           <Input
             label="Course Code (Optional)"
-            placeholder="e.g. CS 145, MATH 201, ECON 301"
+            placeholder="e.g. CS-214, CS-201, EE-110, HU-101"
             value={newSubCode}
             onChange={(e) => setNewSubCode(e.target.value)}
           />
           <Input
             label="Course Description / Topics (Optional)"
-            placeholder="e.g. Relational models, normal forms, indexing algorithms"
+            placeholder="e.g. Relational models, normal forms, B+ Trees, and SQL optimization aligned with HEC course outline"
             value={newSubDesc}
             onChange={(e) => setNewSubDesc(e.target.value)}
           />

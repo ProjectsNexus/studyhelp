@@ -44,12 +44,13 @@ export async function generateContentWithFallback(
             contents: requestConfig.contents,
             config: requestConfig.config,
           }),
-        { operationName: `${operationName} [${model}]`, maxRetries: 1, initialDelayMs: 1000 }
+        { operationName: `${operationName} [${model}]`, maxRetries: 0, initialDelayMs: 500 }
       );
       return response;
     } catch (err: any) {
       lastError = err;
-      console.warn(`[${operationName}] Model ${model} failed (${err?.message?.substring(0, 80)}). Trying fallback model...`);
+      const errMsg = err?.message || String(err);
+      console.warn(`[${operationName}] Model ${model} unavailable (${errMsg.substring(0, 60)}...). Trying next model...`);
     }
   }
 
@@ -57,7 +58,7 @@ export async function generateContentWithFallback(
 }
 
 /**
- * Robust retry handler with exponential backoff and jitter for transient Gemini API errors (429 rate limit, 503 high demand)
+ * Robust retry handler with exponential backoff and jitter for transient Gemini API errors (503 high demand, connection resets)
  */
 export async function withGeminiRetry<T>(
   fn: () => Promise<T>,
@@ -68,9 +69,9 @@ export async function withGeminiRetry<T>(
     operationName?: string;
   } = {}
 ): Promise<T> {
-  const maxRetries = options.maxRetries ?? 2;
-  const initialDelayMs = options.initialDelayMs ?? 1000;
-  const backoffFactor = options.backoffFactor ?? 2;
+  const maxRetries = options.maxRetries ?? 1;
+  const initialDelayMs = options.initialDelayMs ?? 800;
+  const backoffFactor = options.backoffFactor ?? 1.5;
   const opName = options.operationName ?? "Gemini API Call";
 
   let lastError: any = null;
@@ -80,26 +81,34 @@ export async function withGeminiRetry<T>(
     } catch (err: any) {
       lastError = err;
       const errMsg = err?.message || String(err);
-      const isRetryable =
-        errMsg.includes("503") ||
+      const isQuotaOrAuth =
         errMsg.includes("429") ||
         errMsg.includes("RESOURCE_EXHAUSTED") ||
+        errMsg.includes("quota") ||
+        errMsg.includes("API key not valid");
+
+      // For quota or auth issues, fail fast so fallback systems activate immediately without blocking
+      if (isQuotaOrAuth || attempt > maxRetries) {
+        throw err;
+      }
+
+      const isTransientNetwork =
+        errMsg.includes("503") ||
         errMsg.includes("UNAVAILABLE") ||
         errMsg.includes("high demand") ||
-        errMsg.includes("quota") ||
         errMsg.includes("fetch failed") ||
         errMsg.includes("ECONNRESET");
 
-      if (!isRetryable || attempt > maxRetries) {
+      if (!isTransientNetwork) {
         throw err;
       }
 
       const delay = Math.min(
-        initialDelayMs * Math.pow(backoffFactor, attempt - 1) + Math.random() * 400,
-        6000
+        initialDelayMs * Math.pow(backoffFactor, attempt - 1) + Math.random() * 200,
+        3000
       );
       console.warn(
-        `[${opName}] Attempt ${attempt} failed with retryable error (${errMsg.substring(0, 80)}). Retrying in ${Math.round(delay)}ms...`
+        `[${opName}] Transient issue (${errMsg.substring(0, 60)}). Retrying in ${Math.round(delay)}ms...`
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }

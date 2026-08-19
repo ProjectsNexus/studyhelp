@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDocFromServer } from "firebase/firestore";
 import firebaseConfig from "../firebase-applet-config.json";
+import { dispatchGlobalFirebaseError } from "./utils/firebaseErrors";
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -52,6 +53,10 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path,
   };
   console.error("Firestore Error: ", JSON.stringify(errInfo));
+  // Dispatch formatted toast notification across the app
+  try {
+    dispatchGlobalFirebaseError(JSON.stringify(errInfo));
+  } catch {}
   throw new Error(JSON.stringify(errInfo));
 }
 
