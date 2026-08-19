@@ -1,5 +1,6 @@
-import { FILTER_PROMPT_VERSION } from "../ai/prompts/resultFilteringPrompt.js";
-import { FilteredSource, NormalizedSearchResult } from "./types.js";
+import { getAIProviderManager } from "../ai/AIProviderManager.js";
+import { resultFilteringSystemPrompt, FILTER_PROMPT_VERSION } from "../ai/prompts/resultFilteringPrompt.js";
+import { FilteredSource, NormalizedSearchResult, ResultFilteringOutput, ResultFilteringOutputSchema } from "./types.js";
 
 export interface FilterInput {
   universityProfile?: {
@@ -22,6 +23,7 @@ export interface FilterInput {
 
 export class ResultFilteringService {
   readonly version = FILTER_PROMPT_VERSION;
+  private aiManager = getAIProviderManager();
 
   async filterAndRankResults(input: FilterInput): Promise<FilteredSource[]> {
     if (!input.results || input.results.length === 0) {
@@ -40,16 +42,50 @@ export class ResultFilteringService {
       let authorityTier: FilteredSource["authorityTier"] = "educational";
       let authorityScore = 78;
 
-      if (d.includes(".edu") || d.includes("ac.uk") || d.includes("edu.") || d.includes("mit.edu") || d.includes("stanford.edu") || d.includes("harvard.edu") || d.includes("berkeley.edu")) {
+      if (
+        d.includes(".edu") ||
+        d.includes("ac.uk") ||
+        d.includes("edu.") ||
+        d.includes("mit.edu") ||
+        d.includes("stanford.edu") ||
+        d.includes("harvard.edu") ||
+        d.includes("berkeley.edu") ||
+        d.includes("nust.edu.pk") ||
+        d.includes("aku.edu") ||
+        d.includes("kemu.edu.pk")
+      ) {
         authorityTier = "university";
         authorityScore = 96;
-      } else if (d.includes("ieee.org") || d.includes("acm.org") || d.includes("nature.com") || d.includes("springer.com") || d.includes("sciencedirect.com") || d.includes("cell.com") || d.includes("arxiv.org") || d.includes("jstor.org")) {
+      } else if (
+        d.includes("ieee.org") ||
+        d.includes("acm.org") ||
+        d.includes("nature.com") ||
+        d.includes("springer.com") ||
+        d.includes("sciencedirect.com") ||
+        d.includes("cell.com") ||
+        d.includes("arxiv.org") ||
+        d.includes("jstor.org") ||
+        d.includes("pubmed") ||
+        d.includes("ncbi.nlm.nih.gov")
+      ) {
         authorityTier = "publication";
         authorityScore = 95;
-      } else if (d.includes(".gov") || d.includes("nih.gov") || d.includes("nsf.gov") || d.includes("who.int") || d.includes("cern.ch")) {
+      } else if (
+        d.includes(".gov") ||
+        d.includes("nih.gov") ||
+        d.includes("nsf.gov") ||
+        d.includes("who.int") ||
+        d.includes("cern.ch") ||
+        d.includes("hec.gov.pk") ||
+        d.includes("pmdc.pk")
+      ) {
         authorityTier = "government";
         authorityScore = 92;
-      } else if (d.includes("scholar.google.com") || d.includes("semanticscholar.org") || d.includes("researchgate.net")) {
+      } else if (
+        d.includes("scholar.google.com") ||
+        d.includes("semanticscholar.org") ||
+        d.includes("researchgate.net")
+      ) {
         authorityTier = "curriculum";
         authorityScore = 88;
       } else if (d.includes(".org") || d.includes("britannica.com") || d.includes("plato.stanford.edu")) {
@@ -98,9 +134,18 @@ export class ResultFilteringService {
 
     // Sort by weighted composite score
     return scoredList.sort((a, b) => {
-      const scoreA = a.authorityScore * 0.4 + a.relevanceScore * 0.3 + a.topicScore * 0.3 + (tierRank[a.authorityTier] || 0) * 1.5;
-      const scoreB = b.authorityScore * 0.4 + b.relevanceScore * 0.3 + b.topicScore * 0.3 + (tierRank[b.authorityTier] || 0) * 1.5;
+      const scoreA =
+        a.authorityScore * 0.4 +
+        a.relevanceScore * 0.3 +
+        a.topicScore * 0.3 +
+        (tierRank[a.authorityTier] || 0) * 1.5;
+      const scoreB =
+        b.authorityScore * 0.4 +
+        b.relevanceScore * 0.3 +
+        b.topicScore * 0.3 +
+        (tierRank[b.authorityTier] || 0) * 1.5;
       return scoreB - scoreA;
     });
   }
 }
+

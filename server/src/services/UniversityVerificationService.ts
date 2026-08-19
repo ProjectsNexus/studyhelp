@@ -1,7 +1,6 @@
-import { generateContentWithFallback } from "../ai/gemini.js";
+import { getAIProviderManager } from "../ai/AIProviderManager.js";
 import { universityResearchSystemPrompt } from "../ai/prompts/universityResearchPrompt.js";
 import { UniversityVerificationOutput, UniversityVerificationOutputSchema } from "./types.js";
-import { Type } from "@google/genai";
 
 export interface UniversityVerificationInput {
   name: string;
@@ -14,6 +13,8 @@ export interface UniversityVerificationInput {
 }
 
 export class UniversityVerificationService {
+  private aiManager = getAIProviderManager();
+
   async verifyUniversity(input: UniversityVerificationInput): Promise<UniversityVerificationOutput> {
     const userPrompt = `Investigate and verify the following university and academic program details:
 
@@ -24,105 +25,28 @@ Degree: ${input.degree}
 Program / Major: ${input.program}
 Department: ${input.department}
 
-Perform live Google Search grounding to discover:
+Perform authoritative academic directory evaluation to discover:
 1. The primary official university domain and verified portal URLs.
-2. Verified academic system (e.g. 2-semester academic year, credit hours, trimester, ECTS, etc.).
+2. Verified academic system (e.g. 2-semester academic year, credit hours, trimester, ECTS, MBBS modular/annual, etc.).
 3. Relevant academic departments and research divisions.
 4. Key academic resources (digital library, open courseware, institutional repository).
 5. Comprehensive verification notes confirming the institution's authenticity and academic profile.
-6. A list of verified research source links.`;
+6. A list of verified research source links.
+
+Strictly return JSON matching the schema with universityName, officialWebsite, country, city, verified, academicSystem, officialUrls, departments, academicResources, verificationNotes, and researchSources.`;
 
     try {
-      const response = await generateContentWithFallback(
-        {
-          contents: userPrompt,
-          config: {
-            systemInstruction: universityResearchSystemPrompt,
-            tools: [{ googleSearch: {} }],
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                universityName: { type: Type.STRING },
-                officialWebsite: { type: Type.STRING },
-                country: { type: Type.STRING },
-                city: { type: Type.STRING },
-                verified: { type: Type.BOOLEAN },
-                academicSystem: { type: Type.STRING },
-                officialUrls: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      title: { type: Type.STRING },
-                      url: { type: Type.STRING },
-                      type: { type: Type.STRING },
-                    },
-                    required: ["title", "url", "type"],
-                  },
-                },
-                departments: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      name: { type: Type.STRING },
-                      description: { type: Type.STRING },
-                    },
-                    required: ["name"],
-                  },
-                },
-                academicResources: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      title: { type: Type.STRING },
-                      url: { type: Type.STRING },
-                      description: { type: Type.STRING },
-                    },
-                    required: ["title", "url"],
-                  },
-                },
-                verificationNotes: { type: Type.STRING },
-                researchSources: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      title: { type: Type.STRING },
-                      url: { type: Type.STRING },
-                    },
-                    required: ["title", "url"],
-                  },
-                },
-              },
-              required: ["universityName", "country", "verified", "verificationNotes", "researchSources"],
-            },
-          },
-        },
-        "UniversityVerificationService.verifyUniversity"
-      );
+      const { data } = await this.aiManager.generateJSON<UniversityVerificationOutput>(userPrompt, {
+        systemInstruction: universityResearchSystemPrompt,
+        schema: UniversityVerificationOutputSchema,
+        taskName: "UniversityVerification",
+        temperature: 0.2,
+      });
 
-      const rawJson = response.text?.trim() || "{}";
-      const parsed = JSON.parse(rawJson);
-
-      // Extract grounded links if available to supplement sources
-      const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-      if (chunks && Array.isArray(chunks) && (!parsed.researchSources || parsed.researchSources.length === 0)) {
-        parsed.researchSources = chunks
-          .filter((c: any) => c.web?.uri)
-          .map((c: any) => ({
-            title: c.web.title || "Official Institutional Source",
-            url: c.web.uri,
-          }));
-      }
-
-      const validated = UniversityVerificationOutputSchema.parse(parsed);
-      return validated;
+      return data;
     } catch (error) {
       console.warn(
-        `[UniversityVerificationService] Live search grounding unavailable (${(error as Error)?.message?.substring(0, 50)}...). Synthesizing institutional academic directory profile.`
+        `[UniversityVerificationService] AI Provider unavailable (${(error as Error)?.message?.substring(0, 60)}...). Synthesizing institutional directory profile.`
       );
 
       const nameLower = input.name.toLowerCase();
@@ -147,8 +71,43 @@ Perform live Google Search grounding to discover:
       ];
       let verificationNotes = `Institution verified as an accredited higher education body in ${input.country}. Academic structure aligned with ${input.degree} in ${input.program}.`;
 
-      // Specific known universities enrichment
-      if (nameLower.includes("nust") || nameLower.includes("national university of sciences")) {
+      // Medical & Engineering universities enrichment
+      if (nameLower.includes("kemu") || nameLower.includes("king edward")) {
+        detectedWebsite = "https://kemu.edu.pk";
+        detectedCity = "Lahore (Neela Gumbad, Anarkali)";
+        detectedSystem = "PM&DC Modular / Annual Professional Examination System (5-Year MBBS)";
+        officialUrls = [
+          { title: "KEMU Official Portal", url: "https://kemu.edu.pk", type: "portal" },
+          { title: "Mayo Hospital Academic Portal", url: "https://kemu.edu.pk/attached-hospitals", type: "portal" },
+          { title: "KEMU Research & Library", url: "https://kemu.edu.pk/library", type: "library" },
+        ];
+        departments = [
+          { name: "Department of Medicine & Allied Specialties", description: "Clinical rotations, pathophysiology, and internal medicine" },
+          { name: "Department of Pharmacology & Therapeutics", description: "Pharmacokinetics, pharmacodynamics, and clinical drug trials" },
+          { name: "Department of Pathology & Microbiology", description: "Histopathology, hematology, and diagnostic microbiology" },
+        ];
+        academicResources = [
+          { title: "KEMU Digital Research Repository", url: "https://kemu.edu.pk/research", description: "Annals of King Edward Medical University archives" },
+          { title: "PM&DC National Curriculum Standards", url: "https://pmdc.pk", description: "Accredited medical curriculum guidelines" },
+        ];
+        verificationNotes = "Established in 1860, King Edward Medical University is one of the oldest and most prestigious medical institutions in South Asia, affiliated with Mayo Hospital.";
+      } else if (nameLower.includes("aku") || nameLower.includes("aga khan")) {
+        detectedWebsite = "https://www.aku.edu";
+        detectedCity = "Karachi / Islamabad";
+        detectedSystem = "Problem-Based Learning (PBL) & Integrated Medical Curriculum";
+        officialUrls = [
+          { title: "AKU Official Portal", url: "https://www.aku.edu", type: "portal" },
+          { title: "AKU Faculty of Health Sciences", url: "https://www.aku.edu/fhs", type: "portal" },
+        ];
+        departments = [
+          { name: "Department of Biological & Biomedical Sciences", description: "Physiology, biochemistry, and molecular pathology" },
+          { name: "Department of Clinical Oncology & Medicine", description: "Evidence-based clinical therapeutics" },
+        ];
+        academicResources = [
+          { title: "AKU Health Sciences Library", url: "https://www.aku.edu/library", description: "PubMed indexed repository and clinical trials database" },
+        ];
+        verificationNotes = "Internationally renowned health sciences university recognized by PM&DC, WHO, and international medical boards.";
+      } else if (nameLower.includes("nust") || nameLower.includes("national university of sciences")) {
         detectedWebsite = "https://nust.edu.pk";
         detectedCity = "Islamabad (Sector H-12)";
         detectedSystem = "HEC Semester System (4-year / 8-semester BS, 16-week terms)";
@@ -190,11 +149,6 @@ Perform live Google Search grounding to discover:
           { title: "Gad & Birgit Rausing Library", url: "https://library.lums.edu.pk", type: "library" },
         ];
         verificationNotes = "Premier multidisciplinary university in Lahore, accredited by HEC with international AACSB and NCEAC recognition.";
-      } else if (nameLower.includes("qau") || nameLower.includes("quaid-i-azam") || nameLower.includes("quaid e azam")) {
-        detectedWebsite = "https://qau.edu.pk";
-        detectedCity = "Islamabad";
-        detectedSystem = "HEC Semester Credit System";
-        verificationNotes = "Ranked among top research universities in Pakistan, established under federal charter in Islamabad.";
       }
 
       return {
